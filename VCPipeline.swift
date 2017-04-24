@@ -137,6 +137,8 @@ import pipelinefunctions.realign_varcall_by_chr;
 import pipelinefunctions.merge_vcf;
 import pipelinefunctions.joint_vcf;
 import pipelinefunctions.miscellaneous; 
+import pipelinefunctions.mpe_logging; 
+
 
 /****************************************************************************
 Helper functions (Easily handles alignment and duplicate marker choices)
@@ -151,19 +153,26 @@ Alignment
          This function returns a .sam file because samblaster requires it
          To minimize memory usage, delete the .sam file after a .bam file is made from it
         */
+	string events = create_pair("Alignment_stage");
+	string ids[] = split(events, " ");
+
 
         // Use the specified alignment tool
         if (vars["ALIGNERTOOL"] == "BWAMEM") {
         	// Directly return the .sam file created from bwa_mem
-        	outputSam = bwa_mem(vars["BWADIR"], read1, read2, vars["BWAINDEX"], 
+        	mpelog(string2int(ids[0]), "start") =>
+		outputSam = bwa_mem(vars["BWADIR"], read1, read2, vars["BWAINDEX"], 
         			    [vars["BWAMEMPARAMS"]], string2int(vars["PBSCORES"]), rgheader
-        			   );
+        			   ) =>
+		mpelog(string2int(ids[1]), "end");
         } 
         else { // Novoalign is the default aligner
         	// Directly return the .sam file created from novoalign
+		mpelog(string2int(ids[0]), "start") =>
         	outputSam =  novoalign(vars["NOVOALIGNDIR"], read1, read2, vars["NOVOALIGNINDEX"],
         			       [vars["NOVOALIGNPARAMS"]], string2int(vars["PBSCORES"]), rgheader
-        			      );
+        			      ) =>
+		mpelog(string2int(ids[1]), "end");
         }
 }
 
